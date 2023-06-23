@@ -3,9 +3,10 @@ import threading
 import time
 import cv2
 from easytello.stats import Stats
+from easytello.synchro import Synchro
 
 class Tello:
-    def __init__(self, tello_ip: str='192.168.10.1', debug: bool=True):
+    def __init__(self, tello_ip: str='192.168.10.1', debug: bool=True, sync: Synchro=None):
         # Opening local UDP port on 8889 for Tello communication
         self.local_ip = ''
         self.local_port = 8889
@@ -29,6 +30,9 @@ class Tello:
         self.last_frame = None
         self.MAX_TIME_OUT = 15.0
         self.debug = debug
+
+        self.sync = sync
+
         # Setting Tello to command mode
         self.command()
 
@@ -44,15 +48,22 @@ class Tello:
             
         # Checking whether the command has timed out or not (based on value in 'MAX_TIME_OUT')
         start = time.time()
-        while not self.log[-1].got_response():  # Runs while no repsonse has been received in log
+        while not self.log[-1].got_response():  # Runs while no repsonse has been received in log      
             now = time.time()
             difference = now - start
             if difference > self.MAX_TIME_OUT:
                 print('Connection timed out!')
                 break
+
         # Prints out Tello response (if 'debug' is True)
         if self.debug is True and query is False:
             print('Response: {}'.format(self.log[-1].get_response()))
+
+        # Syncs commands with other drones when using a synchronizer
+        if self.sync is not None: 
+            self.sync.selfIsReady()
+            while not self.sync.isSynced():
+                pass
 
     def _receive_thread(self):
         while True:
