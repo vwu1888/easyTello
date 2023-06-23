@@ -15,7 +15,7 @@ class Synchro:
         self.ser.close()
 
     def selfIsReady(self) -> None:
-        self.ser.write(b"ready")
+        self.ser.write(b"READY")
     
     def isSynced(self) -> bool:
         return self.ser.readline().decode("Ascii") == "SYNCED"
