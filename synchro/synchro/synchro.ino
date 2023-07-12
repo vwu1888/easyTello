@@ -1,23 +1,22 @@
-const int synchroOne = 2;
-const int synchroTwo = 3;
-const int synchroThree = 4;
-const int outputOne = 10;
-const int outputTwo = 11;
-const int outputThree = 12;
-
-bool isReady = false;
-bool hasResponse = false;
+int numSyncs = 0;
+int inputPins[6];
+int outputPins[6]
 
 void setup() {
   Serial.begin(19200);
 
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(synchroOne, INPUT);
-  pinMode(synchroTwo, INPUT);
-  // pinMode(synchroThree, INPUT);
-  pinMode(outputOne, OUTPUT);
-  pinMode(outputTwo, OUTPUT);
-  // pinMode(outputThree, OUTPUT);
+}
+
+void setupPins() {
+  numSyncs = waitDrone().toInt();
+
+  for (int i = 0; i < numSyncs; i++) {
+    inputPins[i] = 2 + i;
+    pinMode(inputPins[i], INPUT);
+    outputPins[i] = 8 + i;
+    pinMode(outputPins[i], OUTPUT);
+  }
 }
 
 void loop() {
@@ -27,7 +26,9 @@ void loop() {
     syncUp();
   } else if (result == "FINISH") {
     ready();
+    return;
   } else if (result == "START") {
+    setupPins();
     notReady();
   } else if (result == "UNSYNC") {
     ready();
@@ -41,7 +42,7 @@ void loop() {
 bool syncUp() {
   ready();
 
-  while (digitalRead(synchroOne) == LOW || digitalRead(synchroTwo) == LOW) {}
+  while (!waitSync()) {}
 
   Serial.write("SYNCED\n");
   delay(500);
@@ -50,16 +51,25 @@ bool syncUp() {
 
 void ready() {
   digitalWrite(LED_BUILTIN, HIGH);
-  digitalWrite(outputOne, HIGH);
-  digitalWrite(outputTwo, HIGH);
-  // digitalWrite(outputThree, HIGH);
+  for (int i = 0; i < numSyncs; i++) {
+    digitalWrite(outputPins[i], HIGH)
+  }
 }
 
 void notReady() {
   digitalWrite(LED_BUILTIN, LOW);
-  digitalWrite(outputOne, LOW);
-  digitalWrite(outputTwo, LOW);
-  // digitalWrite(outputThree, LOW);
+  for (int i = 0; i < numSyncs; i++) {
+    digitalWrite(outputPins[i], LOW)
+  }
+}
+
+void bool waitSync() {
+  for (int i = 0; i < numSyncs; i++) {
+    if (digitalRead(inputPins[i]) == LOW) {
+      return false;
+    }
+  }
+  return true;
 }
 
 String waitDrone() {

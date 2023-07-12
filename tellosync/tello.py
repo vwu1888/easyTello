@@ -6,7 +6,7 @@ from tellosync.stats import Stats
 from tellosync.synchro import Synchro
 
 class Tello:
-    def __init__(self, tello_ip: str='192.168.10.1', debug: bool=True, isSynced: bool=False, port: int=0):
+    def __init__(self, tello_ip: str='192.168.10.1', debug: bool=True, isSynced: bool=False, port: int=0, numSynchros: int=0):
         # Opening local UDP port on 8889 for Tello communication
         self.local_ip = ''
         self.local_port = 8889
@@ -33,7 +33,7 @@ class Tello:
 
         self.isSynced = isSynced 
         if isSynced:
-            self.synchro = Synchro(port)
+            self.synchro = Synchro(port, numSynchros)
             self.isSynced = self.synchro.open()
 
         # Setting Tello to command mode

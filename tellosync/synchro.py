@@ -2,11 +2,13 @@ import serial
 import time
 
 class Synchro:
-    def __init__(self, port:int) -> None:
+    def __init__(self, port:int, numSynchros: int=0) -> None:
         self.ser = serial.Serial()
         self.ser.baudrate = 19200
         self.ser.timeout = 2.0
         self.ser.port = f"COM{port}"
+
+        self.numSynchros = numSynchros
     
     def open(self) -> bool:
         try:
@@ -38,7 +40,9 @@ class Synchro:
         self.ser.reset_output_buffer()
 
         self.ser.write(b"START")
+        time.sleep(1.0)
 
+        self.ser.write(str(self.numSynchros).encode("Ascii"))
         time.sleep(1.0)
     
     def finished(self) -> None:
