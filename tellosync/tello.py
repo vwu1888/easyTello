@@ -39,7 +39,7 @@ class Tello:
         # Setting Tello to command mode
         self.command()
 
-    def send_command(self, command: str, delay: float=0.0, query: bool=False, tries: int=0):
+    def send_command(self, command: str, delay: float=0.0, tries: int=0):
         # New log entry created for the outbound command
         self.log.append(Stats(command, len(self.log)))
         currentStats = self.log[-1]
@@ -63,32 +63,36 @@ class Tello:
                 break
 
         # Prints out Tello response (if 'debug' is True)
-        if self.debug is True and not query:
+        if self.debug is True:
             print(f'Response: {currentStats.get_response()}')
 
-        # sourcery skip: merge-nested-ifs
-        if tries < 3 and currentStats.got_response():
-            if currentStats.get_raw_response() == "error No valid imu" or currentStats.get_raw_response == "error Not joystick":
-                self.send_command(command, tries=tries+1)
+        if currentStats.get_raw_response() == "error No valid imu" or currentStats.get_raw_response == "error Not joystick":
+            self.socket.sendto("stop".encode('utf-8'), self.tello_address)
+            time.sleep(1.0)
 
         if delay < 0:
             self.wait(abs(delay))
 
+        time.sleep(0.5)
         self.wait_for_sync()
 
     def _keep_alive(self):
         # Sending command to Tello
         print("Keeping connection alive")
-        self.socket.sendto("speed?".encode('utf-8'), self.tello_address)
+        self.socket.sendto("stop".encode('utf-8'), self.tello_address)
 
     def _receive_thread(self):
         while True:
             # Checking for Tello response, throws socket error
             try:
                 self.response, ip = self.socket.recvfrom(1024)
-                self.log[-1].add_response(self.response.decode('utf-8'))
             except socket.error as exc:
                 print(f'Socket error: {exc}')
+
+            try:
+                self.log[-1].add_response(self.response.decode('utf-8'))
+            except UnicodeDecodeError as e:
+                self.log[-1].add_response("Response: utf-8 decode error")
 
     def _video_thread(self):
         # Creating stream capture object
@@ -152,8 +156,8 @@ class Tello:
     def land(self, delay: float=0.0):
         if self.isSynced:
             self.synchro.finished()
+            self.synchro.close()
         self.send_command('land', delay)
-        self.synchro.close()
 
     def streamon(self):
         self.send_command('streamon')
@@ -218,41 +222,31 @@ class Tello:
 
     # Read Commands
     def get_speed(self):
-        self.send_command('speed?', True)
-        return self.log[-1].get_response()
+        self.send_command('speed?')
 
     def get_battery(self):
-        self.send_command('battery?', True)
-        return self.log[-1].get_response()
+        self.send_command('battery?')
 
     def get_time(self):
-        self.send_command('time?', True)
-        return self.log[-1].get_response()
+        self.send_command('time?')
 
     def get_height(self):
-        self.send_command('height?', True)
-        return self.log[-1].get_response()
+        self.send_command('height?')
     
     def get_temp(self):
-        self.send_command('temp?', True)
-        return self.log[-1].get_response()
+        self.send_command('temp?')
 
     def get_attitude(self):
-        self.send_command('attitude?', True)
-        return self.log[-1].get_response()
+        self.send_command('attitude?')
 
     def get_baro(self):
-        self.send_command('baro?', True)
-        return self.log[-1].get_response()
+        self.send_command('baro?')
 
     def get_acceleration(self):
-        self.send_command('acceleration?', True)
-        return self.log[-1].get_response()
+        self.send_command('acceleration?')
     
     def get_tof(self):
-        self.send_command('tof?', True)
-        return self.log[-1].get_response()
+        self.send_command('tof?')
 
     def get_wifi(self):
-        self.send_command('wifi?', True)
-        return self.log[-1].get_response()
+        self.send_command('wifi?')
