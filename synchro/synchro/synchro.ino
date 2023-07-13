@@ -1,6 +1,6 @@
 int numSyncs = 0;
 int inputPins[6];
-int outputPins[6]
+int outputPins[6];
 
 void setup() {
   Serial.begin(19200);
@@ -52,18 +52,18 @@ bool syncUp() {
 void ready() {
   digitalWrite(LED_BUILTIN, HIGH);
   for (int i = 0; i < numSyncs; i++) {
-    digitalWrite(outputPins[i], HIGH)
+    digitalWrite(outputPins[i], HIGH);
   }
 }
 
 void notReady() {
   digitalWrite(LED_BUILTIN, LOW);
   for (int i = 0; i < numSyncs; i++) {
-    digitalWrite(outputPins[i], LOW)
+    digitalWrite(outputPins[i], LOW);
   }
 }
 
-void bool waitSync() {
+bool waitSync() {
   for (int i = 0; i < numSyncs; i++) {
     if (digitalRead(inputPins[i]) == LOW) {
       return false;
