@@ -1,12 +1,22 @@
 import serial
 import time
+import platform
 
 class Synchro:
     def __init__(self, port:int, numSynchros: int=0) -> None:
         self.ser = serial.Serial()
         self.ser.baudrate = 19200
         self.ser.timeout = 2.0
-        self.ser.port = f"COM{port}"
+        
+        match (platform.system()):
+            case "Windows":
+                self.ser.port = f"COM{port}"
+            case "Linux":
+                self.ser.port = f"/dev/ttyUSB{port}"
+            case "Darwin":
+                self.ser.port = f"/dev/tty.usbmodem{port}"
+            case _:
+                self.ser.port = f"COM{port}"
 
         self.numSynchros = numSynchros
     
