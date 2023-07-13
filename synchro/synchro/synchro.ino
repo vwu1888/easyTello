@@ -1,21 +1,21 @@
 int numSyncs = 0;
-int inputPins[6];
-int outputPins[6];
+
+int inputPins[13];
+int outputPin = 2;
 
 void setup() {
   Serial.begin(19200);
 
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(outputPin, OUTPUT);
 }
 
 void setupPins() {
-  numSyncs = waitDrone().toInt();
+  numSyncs = waitDrone().toInt() - 1;
 
   for (int i = 0; i < numSyncs; i++) {
-    inputPins[i] = 2 + i;
+    inputPins[i] = 3 + i;
     pinMode(inputPins[i], INPUT);
-    outputPins[i] = 8 + i;
-    pinMode(outputPins[i], OUTPUT);
   }
 }
 
@@ -51,16 +51,13 @@ bool syncUp() {
 
 void ready() {
   digitalWrite(LED_BUILTIN, HIGH);
-  for (int i = 0; i < numSyncs; i++) {
-    digitalWrite(outputPins[i], HIGH);
-  }
+  digitalWrite(outputPin, HIGH);
 }
 
 void notReady() {
   digitalWrite(LED_BUILTIN, LOW);
-  for (int i = 0; i < numSyncs; i++) {
-    digitalWrite(outputPins[i], LOW);
-  }
+  digitalWrite(outputPin, LOW);
+
 }
 
 bool waitSync() {
